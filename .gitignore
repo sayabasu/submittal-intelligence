@@ -54,3 +54,4 @@ mydata.csv
 
 # claude session data
 .claude/
+.env*.local
