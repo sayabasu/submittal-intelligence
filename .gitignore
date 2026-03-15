@@ -39,3 +39,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# prisma generated
+/src/generated/prisma
+prisma/dev.db
+prisma/dev.db-journal
+
+# runtime artifacts
+.dev.pid
+
+# generated sample data
+sample-upload.csv
+mydata.csv
+
+# claude session data
+.claude/

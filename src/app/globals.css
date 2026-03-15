@@ -45,6 +45,28 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Risk level colors */
+  --color-risk-critical: #dc2626;
+  --color-risk-high: #ea580c;
+  --color-risk-medium: #ca8a04;
+  --color-risk-low: #16a34a;
+
+  /* Status colors */
+  --color-status-not-submitted: #6b7280;
+  --color-status-submitted: #3b82f6;
+  --color-status-under-review: #8b5cf6;
+  --color-status-approved: #16a34a;
+  --color-status-rejected: #dc2626;
+  --color-status-resubmit: #f59e0b;
+
+  /* Sidebar theme */
+  --color-sidebar-bg: #0f172a;
+  --color-sidebar-bg-hover: #1e293b;
+  --color-sidebar-bg-active: #1e3a5f;
+  --color-sidebar-text: #94a3b8;
+  --color-sidebar-text-active: #f8fafc;
+  --color-sidebar-border-color: #1e293b;
 }
 
 :root {
@@ -126,4 +148,64 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Risk badge styles */
+.risk-badge-critical {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.risk-badge-high {
+  background-color: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #fed7aa;
+}
+
+.risk-badge-medium {
+  background-color: #fefce8;
+  color: #ca8a04;
+  border: 1px solid #fef08a;
+}
+
+.risk-badge-low {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+/* Stat card risk borders */
+.stat-card-critical {
+  border-left: 4px solid #dc2626;
+}
+
+.stat-card-high {
+  border-left: 4px solid #ea580c;
+}
+
+.stat-card-medium {
+  border-left: 4px solid #ca8a04;
+}
+
+.stat-card-low {
+  border-left: 4px solid #16a34a;
+}
+
+/* Custom scrollbar for sidebar */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border-radius: 2px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #475569;
 }
