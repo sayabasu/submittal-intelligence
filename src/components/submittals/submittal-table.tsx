@@ -147,6 +147,13 @@ export function SubmittalTable() {
       }
 
       const res = await fetch(`/api/submittals?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Expected JSON response but got HTML/Text");
+      }
       const json = await res.json();
       setData(json.data || []);
       setPagination((prev) => ({

@@ -16,7 +16,22 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { ProjectSummary } from "@/lib/types";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = (url: string) =>
+  fetch(url).then(async (res) => {
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(
+        `API error [${res.status}]: ${text.slice(0, 100)}${
+          text.length > 100 ? "..." : ""
+        }`
+      );
+    }
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error("Expected JSON response but got something else");
+    }
+    return res.json();
+  });
 
 interface NavItem {
   label: string;

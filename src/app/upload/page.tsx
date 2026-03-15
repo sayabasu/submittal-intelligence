@@ -120,8 +120,19 @@ export default function UploadPage() {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to parse file");
+        let errorMessage = "Failed to parse file";
+        try {
+          const contentType = res.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const errorData = await res.json();
+            errorMessage = errorData.error || errorMessage;
+          } else {
+            errorMessage = `Server error: ${res.status}`;
+          }
+        } catch {
+          errorMessage = `Server error: ${res.status}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data: ParsedData = await res.json();
@@ -203,8 +214,19 @@ export default function UploadPage() {
       setImportProgress(80);
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Import failed");
+        let errorMessage = "Import failed";
+        try {
+          const contentType = res.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const errorData = await res.json();
+            errorMessage = errorData.error || errorMessage;
+          } else {
+            errorMessage = `Server error: ${res.status}`;
+          }
+        } catch {
+          errorMessage = `Server error: ${res.status}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result: ImportResult = await res.json();

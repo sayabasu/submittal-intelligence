@@ -125,6 +125,13 @@ function EscalationsPage() {
         params.set("status", statusFilter);
       }
       const res = await fetch(`/api/escalations?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Expected JSON response but got HTML/Text");
+      }
       const json = await res.json();
       setEscalations(json.data || []);
     } catch (err) {
@@ -155,6 +162,9 @@ function EscalationsPage() {
       const res = await fetch(
         `/api/submittals?search=${encodeURIComponent(query)}&pageSize=10&sortBy=riskScore&sortDir=desc`
       );
+      if (!res.ok) return;
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) return;
       const json = await res.json();
       setSubmittalOptions(
         (json.data || []).map((s: Record<string, unknown>) => ({

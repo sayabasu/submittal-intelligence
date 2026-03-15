@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { openai } from "@/lib/openai";
 import { buildEscalationPrompt, parseEscalationResponse } from "@/lib/escalation-prompt";
 import { calculateRisk } from "@/lib/risk-engine";
+import { format } from "date-fns";
 
 export async function GET(request: NextRequest) {
   try {
@@ -99,15 +100,41 @@ export async function POST(request: NextRequest) {
       senderName: "Project Engineer",
     });
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 500,
-    });
+    let responseText = "";
+    let aiModel = "gpt-4o-mini";
+    let openaiClient = openai;
+
+    if (openaiClient) {
+      try {
+        const completion = await openaiClient.chat.completions.create({
+          model: aiModel,
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.7,
+          max_tokens: 500,
+        });
+        responseText = completion.choices[0]?.message?.content || "";
+      } catch (err) {
+        console.error("OpenAI API call failed:", err);
+        openaiClient = null; // Force fallback below
+      }
+    }
+
+    if (!openaiClient) {
+      aiModel = "rule-based-template";
+      responseText = `SUBJECT: Urgent Escalation: Submittal ${submittal.submittalNumber} - ${submittal.description}
+BODY: Dear ${submittal.reviewer.split(" - ")[0]},
+
+I am writing to formally escalate the review for submittal ${submittal.submittalNumber} (${submittal.description}). 
+
+Our latest risk analysis shows this item is at ${risk.level.toUpperCase()} risk. With a current margin of ${risk.marginDays} days and a required on-site date of ${format(new Date(submittal.requiredOnSiteDate), "MMM d, yyyy")}, any further delay in the review process will directly impact the project schedule. 
+
+The full procurement pipeline (including manufacturing and shipping) requires ${risk.breakdown.totalNeededDays} days. Please prioritize this review and provide your feedback as soon as possible to avoid a critical path delay.
+
+Best regards,
+Project Engineer`;
+    }
 
     const generationTimeMs = Date.now() - startTime;
-    const responseText = completion.choices[0]?.message?.content || "";
     const { subject, body: emailBody } = parseEscalationResponse(responseText);
 
     const urgencyLevel = risk.level === "critical" ? "critical" : risk.level === "high" ? "high" : "medium";
@@ -121,7 +148,7 @@ export async function POST(request: NextRequest) {
         recipient: submittal.reviewer,
         recipientEmail: submittal.reviewerEmail,
         urgencyLevel,
-        aiModel: "gpt-4o-mini",
+        aiModel,
         promptVersion: "v1",
         generationTimeMs,
         status: "draft",

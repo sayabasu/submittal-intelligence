@@ -1,22 +1,24 @@
 -- CreateTable
 CREATE TABLE "Project" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "code" TEXT NOT NULL,
     "description" TEXT,
     "location" TEXT,
-    "capacityMw" REAL,
+    "capacityMw" DOUBLE PRECISION,
     "owner" TEXT,
     "epc" TEXT,
-    "noticeToProceedDate" DATETIME,
-    "targetCompletionDate" DATETIME,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "noticeToProceedDate" TIMESTAMP(3),
+    "targetCompletionDate" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Project_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Submittal" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
     "submittalNumber" TEXT NOT NULL,
     "specSection" TEXT NOT NULL,
@@ -26,12 +28,12 @@ CREATE TABLE "Submittal" (
     "discipline" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'not_submitted',
     "revision" INTEGER NOT NULL DEFAULT 0,
-    "submittedDate" DATETIME,
-    "reviewDueDate" DATETIME,
-    "approvedDate" DATETIME,
-    "linkedPoDate" DATETIME,
+    "submittedDate" TIMESTAMP(3),
+    "reviewDueDate" TIMESTAMP(3),
+    "approvedDate" TIMESTAMP(3),
+    "linkedPoDate" TIMESTAMP(3),
     "manufacturingLeadTimeWeeks" INTEGER NOT NULL,
-    "requiredOnSiteDate" DATETIME NOT NULL,
+    "requiredOnSiteDate" TIMESTAMP(3) NOT NULL,
     "shippingBufferDays" INTEGER NOT NULL DEFAULT 14,
     "poProcessingDays" INTEGER NOT NULL DEFAULT 10,
     "vendor" TEXT NOT NULL,
@@ -41,32 +43,34 @@ CREATE TABLE "Submittal" (
     "reviewerEmail" TEXT,
     "submitter" TEXT,
     "riskLevel" TEXT,
-    "riskScore" REAL,
+    "riskScore" DOUBLE PRECISION,
     "daysUntilCritical" INTEGER,
-    "riskCalculatedAt" DATETIME,
+    "riskCalculatedAt" TIMESTAMP(3),
     "riskNotes" TEXT,
     "notes" TEXT,
     "sourceRow" INTEGER,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Submittal_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Submittal_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "SubmittalStatusHistory" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "submittalId" TEXT NOT NULL,
     "fromStatus" TEXT,
     "toStatus" TEXT NOT NULL,
-    "changedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "changedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "changedBy" TEXT,
     "notes" TEXT,
-    CONSTRAINT "SubmittalStatusHistory_submittalId_fkey" FOREIGN KEY ("submittalId") REFERENCES "Submittal" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+
+    CONSTRAINT "SubmittalStatusHistory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Escalation" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
     "submittalId" TEXT NOT NULL,
     "subject" TEXT NOT NULL,
@@ -79,20 +83,20 @@ CREATE TABLE "Escalation" (
     "generationTimeMs" INTEGER,
     "status" TEXT NOT NULL DEFAULT 'draft',
     "editedBody" TEXT,
-    "approvedAt" DATETIME,
+    "approvedAt" TIMESTAMP(3),
     "approvedBy" TEXT,
-    "sentAt" DATETIME,
-    "dismissedAt" DATETIME,
+    "sentAt" TIMESTAMP(3),
+    "dismissedAt" TIMESTAMP(3),
     "dismissReason" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Escalation_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Escalation_submittalId_fkey" FOREIGN KEY ("submittalId") REFERENCES "Submittal" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Escalation_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "UploadLog" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "filename" TEXT NOT NULL,
     "fileType" TEXT NOT NULL,
     "rowCount" INTEGER NOT NULL,
@@ -101,19 +105,23 @@ CREATE TABLE "UploadLog" (
     "errorCount" INTEGER NOT NULL,
     "columnMapping" TEXT NOT NULL,
     "uploadedBy" TEXT NOT NULL DEFAULT 'system',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "UploadLog_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "LeadTimeReference" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "equipmentCategory" TEXT NOT NULL,
     "displayName" TEXT NOT NULL,
     "typicalLeadTimeWeeks" INTEGER NOT NULL,
     "minLeadTimeWeeks" INTEGER NOT NULL,
     "maxLeadTimeWeeks" INTEGER NOT NULL,
     "typicalReviewDays" INTEGER NOT NULL,
-    "notes" TEXT
+    "notes" TEXT,
+
+    CONSTRAINT "LeadTimeReference_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -139,3 +147,15 @@ CREATE INDEX "Escalation_submittalId_idx" ON "Escalation"("submittalId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "LeadTimeReference_equipmentCategory_key" ON "LeadTimeReference"("equipmentCategory");
+
+-- AddForeignKey
+ALTER TABLE "Submittal" ADD CONSTRAINT "Submittal_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SubmittalStatusHistory" ADD CONSTRAINT "SubmittalStatusHistory_submittalId_fkey" FOREIGN KEY ("submittalId") REFERENCES "Submittal"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Escalation" ADD CONSTRAINT "Escalation_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Escalation" ADD CONSTRAINT "Escalation_submittalId_fkey" FOREIGN KEY ("submittalId") REFERENCES "Submittal"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
